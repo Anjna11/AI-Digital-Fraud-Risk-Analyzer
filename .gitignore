@@ -1,0 +1,49 @@
+# Frontend
+FRONTEND/node_modules/
+FRONTEND/.next/
+
+# Backend
+BACKEND/__pycache__/
+BACKEND/.venv/
+BACKEND/venv/
+
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# Build/cache
+*.log
+# Frontend
+FRONTEND/node_modules/
+FRONTEND/.next/
+
+# Environment files
+.env
+.env.*
+FRONTEND/.env
+FRONTEND/.env.*
+
+# Future backend
+BACKEND/.venv/
+BACKEND/venv/
+BACKEND/__pycache__/
+BACKEND/.env
+BACKEND/.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Unnecessary files
+FRONTENDnew.zip
+AI-Powered_Digital_Fraud_Risk_Analyzer_Review1.pdf
+package-lock.json
