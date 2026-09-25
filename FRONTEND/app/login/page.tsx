@@ -7,16 +7,27 @@ import { Navbar } from "@/components/navbar/navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { loginUser } from "@/services/authService";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    // Mocked auth — real login will call auth-service (Spring Boot) here.
-    setTimeout(() => router.push("/dashboard"), 600);
+    try {
+      await loginUser(email, password);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -34,14 +45,29 @@ export default function LoginPage() {
                 <label htmlFor="email" className="mb-1.5 block text-sm text-ink-dim">
                   Email
                 </label>
-                <Input id="email" type="email" placeholder="you@example.com" required />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
               <div>
                 <label htmlFor="password" className="mb-1.5 block text-sm text-ink-dim">
                   Password
                 </label>
-                <Input id="password" type="password" placeholder="••••••••" required />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
+              {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Logging in…" : "Log in"}
               </Button>

@@ -117,18 +117,30 @@ function toResult(type: AnalysisType, input: string): AnalysisResult {
 }
 
 export async function analyzeUrl(url: string): Promise<AnalysisResult> {
-  await delay();
-  return toResult("url", url);
+  const response = await fetch("http://localhost:8080/api/analyze/url", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value: url }),
+  });
+  return await response.json();
 }
 
 export async function analyzeMessage(message: string): Promise<AnalysisResult> {
-  await delay();
-  return toResult("message", message);
+  const response = await fetch("http://localhost:8080/api/analyze/message", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value: message }),
+  });
+  return await response.json();
 }
 
 export async function analyzeQr(fileName: string): Promise<AnalysisResult> {
-  await delay(1300);
-  return toResult("qr", fileName);
+  const response = await fetch("http://localhost:8080/api/analyze/qr", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value: fileName }),
+  });
+  return await response.json();
 }
 
 export async function getHistory(): Promise<HistoryItem[]> {
