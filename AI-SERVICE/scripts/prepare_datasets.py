@@ -4,6 +4,7 @@ Sources:
 - Active phishing URLs: mitchellkrogza/Phishing.Database (GitHub)
 - Legitimate domains: Tranco top-domain list
 - SMS spam/ham: UCI SMS Spam Collection
+- Smishing-labelled SMS: Combined Labeled Smishing Dataset (labels partly keyword-derived; weak-label caveat)
 
 These sources are useful starter data, not ground truth for every scam. Review
 source licenses and dataset drift before public/commercial deployment.
