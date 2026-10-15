@@ -47,8 +47,34 @@ export function ResultCard({
             )}
           </div>
         </div>
-        <RiskScore score={result.riskScore} level={result.riskLevel} size="sm" />
+        <div className="space-y-2">
+          <RiskScore score={result.riskScore} level={result.riskLevel} size="sm" />
+          {result.predictionLabel && (
+            <p className="text-xs text-muted">
+              Model prediction: {result.predictionLabel.replaceAll("_", " ")}
+            </p>
+          )}
+          {typeof result.confidence === "number" && (
+            <p className="text-xs text-muted">
+              Model confidence: {Math.round(result.confidence * 100)}% (not a guarantee)
+            </p>
+          )}
+          {result.modelVersion && (
+            <p className="text-xs text-muted">Model: {result.modelVersion}</p>
+          )}
+        </div>
       </div>
+
+      {result.decodedContent && (
+        <div className="border-b border-border px-6 py-4">
+          <p className="mb-2 text-sm font-medium text-ink">
+            Decoded QR content {result.qrContentType ? `(${result.qrContentType})` : ""}
+          </p>
+          <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded-md bg-bg-elevated p-3 text-xs text-ink-dim">
+            {result.decodedContent}
+          </pre>
+        </div>
+      )}
 
       <CardContent className="grid gap-6 sm:grid-cols-2">
         <div>

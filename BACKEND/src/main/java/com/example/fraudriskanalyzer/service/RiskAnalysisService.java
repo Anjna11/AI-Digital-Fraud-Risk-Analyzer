@@ -6,57 +6,65 @@ import com.example.fraudriskanalyzer.repository.AnalysisRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class RiskAnalysisService {
 
     private final AnalysisRepository analysisRepository;
-    private final AtomicInteger idCounter = new AtomicInteger(100);
+    private final AiServiceClient aiServiceClient;
 
-    // Spring automatically hands us the repository here
-    public RiskAnalysisService(AnalysisRepository analysisRepository) {
+    public RiskAnalysisService(
+            AnalysisRepository analysisRepository,
+            AiServiceClient aiServiceClient) {
         this.analysisRepository = analysisRepository;
+        this.aiServiceClient = aiServiceClient;
     }
 
     public AnalysisResult analyze(String type, String input) {
-        String timestamp = Instant.now().toString();
+        // Real model inference happens in the Python AI service. If that service
+        // is unavailable or its model artifacts are missing, do not save a fake result.
+        AiServiceClient.AiAnalysisResponse ai = aiServiceClient.analyze(type, input);
+        String timestamp = ai.timestamp() == null || ai.timestamp().isBlank()
+                ? Instant.now().toString()
+                : ai.timestamp();
 
-        // TODO: replace with real AI analysis call
-        int riskScore = 0;
-        String riskLevel = "safe";
-        String scamCategory = null;
-        List<String> reasons = List.of("AI analysis not connected yet");
-        List<String> recommendations = List.of();
+        // Avoid storing the full base64 QR image in MongoDB. The AI service returns
+        // a safe display label for QR input and the decoded content separately.
+        String displayInput = ai.input() == null || ai.input().isBlank() ? input : ai.input();
 
-        // 1. Save to MongoDB
         AnalysisDocument document = new AnalysisDocument();
         document.setType(type);
-        document.setInput(input);
-        document.setRiskScore(riskScore);
-        document.setRiskLevel(riskLevel);
-        document.setScamCategory(scamCategory);
-        document.setReasons(reasons);
-        document.setRecommendations(recommendations);
-        document.setStatus("done"); // will become "pending" once AI call is async later
+        document.setInput(displayInput);
+        document.setRiskScore(ai.riskScore());
+        document.setRiskLevel(ai.riskLevel());
+        document.setScamCategory(ai.scamCategory());
+        document.setPredictionLabel(ai.predictionLabel());
+        document.setConfidence(ai.confidence());
+        document.setModelVersion(ai.modelVersion());
+        document.setDecodedContent(ai.decodedContent());
+        document.setQrContentType(ai.qrContentType());
+        document.setReasons(ai.reasons());
+        document.setRecommendations(ai.recommendations());
+        document.setStatus("done");
         document.setTimestamp(timestamp);
 
         AnalysisDocument saved = analysisRepository.save(document);
-        // saved.getId() now contains the auto-generated MongoDB _id
 
-        // 2. Build the response sent back to frontend
         AnalysisResult result = new AnalysisResult();
-        result.setId(saved.getId()); // use the real MongoDB id, not a fake counter
+        result.setId(saved.getId());
         result.setType(type);
-        result.setInput(input);
-        result.setRiskScore(riskScore);
-        result.setRiskLevel(riskLevel);
-        result.setScamCategory(scamCategory);
-        result.setReasons(reasons);
-        result.setRecommendations(recommendations);
+        result.setInput(displayInput);
+        result.setRiskScore(ai.riskScore());
+        result.setRiskLevel(ai.riskLevel());
+        result.setScamCategory(ai.scamCategory());
+        result.setPredictionLabel(ai.predictionLabel());
+        result.setConfidence(ai.confidence());
+        result.setModelVersion(ai.modelVersion());
+        result.setDecodedContent(ai.decodedContent());
+        result.setQrContentType(ai.qrContentType());
+        result.setReasons(ai.reasons());
+        result.setRecommendations(ai.recommendations());
         result.setTimestamp(timestamp);
-
         return result;
     }
 }
