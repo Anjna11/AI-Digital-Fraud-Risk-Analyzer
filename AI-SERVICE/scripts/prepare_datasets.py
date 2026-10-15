@@ -26,6 +26,7 @@ PROCESSED.mkdir(parents=True, exist_ok=True)
 PHISHING_URLS = "https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/phishing-links-ACTIVE.txt"
 TRANCO_URL = "https://tranco-list.eu/top-1m.csv.zip"
 UCI_SMS_URL = "https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip"
+SMISHING_CSV_URL = "https://raw.githubusercontent.com/shaghayegh-hp/Smishing_Dataset/main/Combined-Labeled-Dataset.csv"
 HEADERS = {"User-Agent": "VeristateFraudRiskAnalyzer/0.1 (academic research)"}
 
 
@@ -70,6 +71,7 @@ def prepare_urls() -> None:
 
 
 def prepare_messages() -> None:
+    # UCI provides a familiar ham/spam baseline.
     print("Downloading UCI SMS Spam Collection...")
     archive_bytes = get(UCI_SMS_URL)
     (RAW / "sms-spam-collection.zip").write_bytes(archive_bytes)
@@ -82,10 +84,51 @@ def prepare_messages() -> None:
             for raw_line in f.read().decode("utf-8", errors="replace").splitlines():
                 label, separator, message = raw_line.partition("\t")
                 if separator and label in {"ham", "spam"} and message.strip():
-                    rows.append({"text": message.strip(), "label": 1 if label == "spam" else 0})
-    frame = pd.DataFrame(rows).drop_duplicates(subset=["text"])
+                    rows.append({
+                        "text": message.strip(),
+                        "label": 1 if label == "spam" else 0,
+                        "source": "uci_sms_spam_collection",
+                    })
+
+    # Add a dataset that includes explicit smishing labels. Its README states
+    # labels were assigned partly from keyword presence, so this source has
+    # weak-label/keyword-leakage risk and must not be treated as perfect ground truth.
+    print("Downloading combined labeled smishing dataset...")
+    smishing_bytes = get(SMISHING_CSV_URL)
+    (RAW / "combined-labeled-smishing.csv").write_bytes(smishing_bytes)
+    smishing = pd.read_csv(io.BytesIO(smishing_bytes))
+    smishing.columns = [str(col).strip().lower() for col in smishing.columns]
+    required = {"message", "spam label", "smishing label"}
+    if not required.issubset(set(smishing.columns)):
+        raise RuntimeError(
+            "Smishing dataset columns changed. Expected message, spam label, smishing label; "
+            f"received {list(smishing.columns)}"
+        )
+    smishing = smishing.dropna(subset=["message"])
+    spam = pd.to_numeric(smishing["spam label"], errors="coerce").fillna(0).astype(int)
+    smish = pd.to_numeric(smishing["smishing label"], errors="coerce").fillna(0).astype(int)
+    labels = ((spam > 0) | (smish > 0)).astype(int)
+    for message, label in zip(smishing["message"], labels):
+        if str(message).strip():
+            rows.append({
+                "text": str(message).strip(),
+                "label": int(label),
+                "source": "combined_labeled_smishing",
+            })
+
+    frame = pd.DataFrame(rows)
+    frame["text"] = frame["text"].astype(str).str.strip()
+    frame = frame[frame["text"].str.len() > 0]
+    # Prefer the positive label if the same text has conflicting labels across sources.
+    frame["_dedupe"] = frame["text"].str.lower()
+    frame = frame.sort_values("label", ascending=False).drop_duplicates(subset=["_dedupe"])
+    frame = frame.drop(columns=["_dedupe"])
     frame.to_csv(PROCESSED / "message_dataset.csv", index=False)
-    print(f"Message dataset: {len(frame):,} unique examples; spam={int(frame.label.sum()):,}, ham={int((frame.label == 0).sum()):,}")
+    print(
+        f"Message dataset: {len(frame):,} unique examples; "
+        f"spam/smishing={int(frame.label.sum()):,}, "
+        f"ham/non-smishing={int((frame.label == 0).sum()):,}"
+    )
 
 
 if __name__ == "__main__":
