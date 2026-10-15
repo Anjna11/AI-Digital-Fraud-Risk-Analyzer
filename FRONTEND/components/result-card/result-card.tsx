@@ -50,6 +50,17 @@ export function ResultCard({
         <RiskScore score={result.riskScore} level={result.riskLevel} size="sm" />
       </div>
 
+      {result.decodedContent && (
+        <div className="border-b border-border px-6 py-4">
+          <p className="mb-2 text-sm font-medium text-ink">
+            Decoded QR content {result.qrContentType ? `(${result.qrContentType})` : ""}
+          </p>
+          <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded-md bg-bg-elevated p-3 text-xs text-ink-dim">
+            {result.decodedContent}
+          </pre>
+        </div>
+      )}
+
       <CardContent className="grid gap-6 sm:grid-cols-2">
         <div>
           <div className="mb-3 flex items-center gap-2 text-sm font-medium text-ink">
