@@ -23,7 +23,7 @@ models = FraudModels()
 
 
 class AnalyzeRequest(BaseModel):
-    value: str = Field(min_length=1, max_length=2_000_000)
+    value: str = Field(min_length=1, max_length=7_500_000)
 
 
 class HealthResponse(BaseModel):
