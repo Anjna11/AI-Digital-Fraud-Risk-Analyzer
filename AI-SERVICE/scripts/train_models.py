@@ -105,7 +105,7 @@ if __name__ == "__main__":
         )
         message_metrics = train_one(
             DATA / "message_dataset.csv", "text", "label",
-            "message_model.joblib", "message-char-tfidf-logreg-v1",
+            "message_model.joblib", "message_evaluation.json", "message-char-tfidf-logreg-v1",
         )
     except Exception as exc:
         print(f"Training failed: {exc}", file=sys.stderr)
