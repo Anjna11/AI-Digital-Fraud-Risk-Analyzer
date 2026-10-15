@@ -116,35 +116,29 @@ function toResult(type: AnalysisType, input: string): AnalysisResult {
   };
 }
 
-export async function analyzeUrl(url: string): Promise<AnalysisResult> {
-  const response = await fetch("http://localhost:8080/api/analyze/url", {
+async function postAnalysis(endpoint: string, value: string): Promise<AnalysisResult> {
+  const response = await fetch(`http://localhost:8080/api/analyze/${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: url }),
-  });
-  return await response.json();
-}
-
-export async function analyzeMessage(message: string): Promise<AnalysisResult> {
-  const response = await fetch("http://localhost:8080/api/analyze/message", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: message }),
-  });
-  return await response.json();
-}
-
-export async function analyzeQr(imageDataUrl: string): Promise<AnalysisResult> {
-  const response = await fetch("http://localhost:8080/api/analyze/qr", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: imageDataUrl }),
+    body: JSON.stringify({ value }),
   });
   if (!response.ok) {
     const body = await response.json().catch(() => null);
-    throw new Error(body?.detail ?? body?.message ?? "QR analysis failed. Please try again.");
+    throw new Error(body?.detail ?? body?.message ?? `Analysis failed (${response.status}). Please try again.`);
   }
-  return await response.json();
+  return response.json();
+}
+
+export async function analyzeUrl(url: string): Promise<AnalysisResult> {
+  return postAnalysis("url", url);
+}
+
+export async function analyzeMessage(message: string): Promise<AnalysisResult> {
+  return postAnalysis("message", message);
+}
+
+export async function analyzeQr(imageDataUrl: string): Promise<AnalysisResult> {
+  return postAnalysis("qr", imageDataUrl);
 }
 
 export async function getHistory(): Promise<HistoryItem[]> {
