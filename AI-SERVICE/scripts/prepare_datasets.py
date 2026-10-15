@@ -98,7 +98,7 @@ def prepare_messages() -> None:
     smishing_bytes = get(SMISHING_CSV_URL)
     (RAW / "combined-labeled-smishing.csv").write_bytes(smishing_bytes)
     smishing = pd.read_csv(io.BytesIO(smishing_bytes))
-    smishing.columns = [str(col).strip().lower().lstrip("\\ufeff") for col in smishing.columns]
+    smishing.columns = [str(col).strip().lower().replace(chr(65279), "") for col in smishing.columns]
     required = {"message", "spam label", "smishing label"}
     if not required.issubset(set(smishing.columns)):
         raise RuntimeError(
