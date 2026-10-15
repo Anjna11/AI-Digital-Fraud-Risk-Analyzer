@@ -6,7 +6,7 @@ Python inference service for the AI-Powered Digital Fraud Risk Analyzer.
 
 This service trains two real supervised machine-learning pipelines:
 - **URL model:** character n-gram TF-IDF + Logistic Regression trained from an active phishing URL feed and a Tranco popular-domain list.
-- **Message model:** character n-gram TF-IDF + Logistic Regression trained on the UCI SMS Spam Collection.
+- **Message model:** character n-gram TF-IDF + Logistic Regression trained on the UCI SMS Spam Collection plus a public combined smishing-labelled dataset. The combined dataset README says labels were assigned partly by keyword presence, so label leakage/noisy labels are a known risk.
 
 The QR endpoint decodes an image using OpenCV, then routes a decoded URL to the URL model or decoded text to the message model. QR decoding is not itself a trained model.
 
@@ -33,6 +33,7 @@ The first data preparation requires internet access. It downloads:
 - Active phishing URLs from `mitchellkrogza/Phishing.Database`
 - Tranco's top-domain list (the first 100,000 entries are used)
 - UCI SMS Spam Collection
+- Combined Labeled Smishing Dataset from `shaghayegh-hp/Smishing_Dataset` (academic/research use; follow its citation and use terms)
 
 Check source terms/licenses and inspect the prepared data before using it outside an academic prototype. Do not treat the current public feed as a complete list of phishing URLs.
 
