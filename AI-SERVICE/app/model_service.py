@@ -206,7 +206,7 @@ class FraudModels:
             "reasons": reasons[:6],
             "recommendations": self._recommendations(level),
             "modelVersion": self.metadata.get("message_model_version", "message-model-unversioned"),
-            "modelScopeWarning": "Message model is trained on the UCI SMS Spam Collection (spam/ham labels); spam is a proxy signal and is not equivalent to confirmed fraud.",
+            "modelScopeWarning": "Message model uses UCI ham/spam labels plus a combined smishing dataset whose README says labels were partly assigned by keyword presence; labels are noisy proxies, not confirmed fraud ground truth.",
         }
 
     def analyze_qr_payload(self, payload: str) -> dict[str, Any]:
