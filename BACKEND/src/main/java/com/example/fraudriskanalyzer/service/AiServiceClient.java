@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
@@ -41,6 +42,15 @@ public class AiServiceClient {
                         HttpStatus.BAD_GATEWAY, "AI service returned an empty response.");
             }
             return response;
+        } catch (RestClientResponseException ex) {
+            HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+            if (status == null || status.is5xxServerError()) {
+                status = HttpStatus.SERVICE_UNAVAILABLE;
+            }
+            throw new ResponseStatusException(
+                    status,
+                    "AI service rejected the request: " + ex.getResponseBodyAsString(),
+                    ex);
         } catch (RestClientException ex) {
             throw new ResponseStatusException(
                     HttpStatus.SERVICE_UNAVAILABLE,
