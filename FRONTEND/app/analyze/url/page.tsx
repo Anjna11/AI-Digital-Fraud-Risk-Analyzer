@@ -12,12 +12,19 @@ import { Info, ScanSearch } from "lucide-react";
 export default function UrlAnalyzerPage() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleAnalyze(url: string) {
     setLoading(true);
-    const res = await analyzeUrl(url);
-    setResult(res);
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await analyzeUrl(url);
+      setResult(res);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Analysis failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -48,6 +55,12 @@ export default function UrlAnalyzerPage() {
             <UrlForm onAnalyze={handleAnalyze} loading={loading} />
           </CardContent>
         </Card>
+
+        {error && (
+          <div role="alert" className="mt-4 rounded-md border border-risk-high/30 bg-surface p-4 text-sm text-risk-high">
+            {error}
+          </div>
+        )}
 
         {loading && (
           <div className="relative mt-6 overflow-hidden rounded-lg border border-border bg-surface p-10 text-center">
