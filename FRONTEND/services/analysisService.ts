@@ -134,12 +134,16 @@ export async function analyzeMessage(message: string): Promise<AnalysisResult> {
   return await response.json();
 }
 
-export async function analyzeQr(fileName: string): Promise<AnalysisResult> {
+export async function analyzeQr(imageDataUrl: string): Promise<AnalysisResult> {
   const response = await fetch("http://localhost:8080/api/analyze/qr", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: fileName }),
+    body: JSON.stringify({ value: imageDataUrl }),
   });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.detail ?? body?.message ?? "QR analysis failed. Please try again.");
+  }
   return await response.json();
 }
 
