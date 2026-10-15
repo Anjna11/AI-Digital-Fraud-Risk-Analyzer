@@ -47,7 +47,22 @@ export function ResultCard({
             )}
           </div>
         </div>
-        <RiskScore score={result.riskScore} level={result.riskLevel} size="sm" />
+        <div className="space-y-2">
+          <RiskScore score={result.riskScore} level={result.riskLevel} size="sm" />
+          {result.predictionLabel && (
+            <p className="text-xs text-muted">
+              Model prediction: {result.predictionLabel.replaceAll("_", " ")}
+            </p>
+          )}
+          {typeof result.confidence === "number" && (
+            <p className="text-xs text-muted">
+              Model confidence: {Math.round(result.confidence * 100)}% (not a guarantee)
+            </p>
+          )}
+          {result.modelVersion && (
+            <p className="text-xs text-muted">Model: {result.modelVersion}</p>
+          )}
+        </div>
       </div>
 
       {result.decodedContent && (
