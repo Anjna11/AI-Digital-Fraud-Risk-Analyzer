@@ -117,7 +117,7 @@ if __name__ == "__main__":
         "url_dataset": url_metrics["dataset"],
         "message_dataset": message_metrics["dataset"],
         "trained_at_utc": datetime.now(timezone.utc).isoformat(),
-        "message_scope_warning": "UCI SMS Spam Collection labels spam vs ham, not confirmed fraud vs legitimate.",
+        "message_scope_warning": "Combined UCI ham/spam and public smishing data; the combined smishing source reports keyword-based labeling, so labels may be noisy and are not confirmed fraud ground truth.",
     }
     joblib.dump(metadata, MODELS / "model_metadata.joblib", compress=3)
     print(f"Models saved to {MODELS}")
