@@ -43,6 +43,9 @@ def prepare_urls() -> None:
         line.strip() for line in phishing_bytes.decode("utf-8", errors="ignore").splitlines()
         if line.strip().startswith(("http://", "https://"))
     ]
+    # Keep the starter training run manageable on a typical student laptop.
+    # The source feed is larger and changes over time; expand this cap after profiling.
+    phishing = phishing[:100_000]
 
     print("Downloading Tranco top-domain list...")
     tranco_bytes = get(TRANCO_URL)
