@@ -12,6 +12,11 @@ export interface AnalysisResult {
   reasons: string[];
   recommendations: string[];
   timestamp: string; // ISO string
+  predictionLabel?: string;
+  confidence?: number;
+  modelVersion?: string;
+  decodedContent?: string;
+  qrContentType?: string;
 }
 
 export interface HistoryItem {
