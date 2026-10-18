@@ -4,12 +4,14 @@ from __future__ import annotations
 import base64
 import binascii
 import re
+import os
 from datetime import datetime, timezone
 from typing import Literal
 
 import cv2
 import numpy as np
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from app.model_service import FraudModels, ModelsUnavailable
@@ -19,6 +21,25 @@ app = FastAPI(
     version="0.1.0",
     description="Trained URL and SMS risk classifiers with QR decoding.",
 )
+
+# Allow the Next.js browser app to call this API directly.
+# Configure comma-separated origins in AI_CORS_ORIGINS for deployment.
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "AI_CORS_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+)
+
 models = FraudModels()
 
 
