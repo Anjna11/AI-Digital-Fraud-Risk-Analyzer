@@ -3,6 +3,10 @@ package com.example.fraudriskanalyzer.controller;
 import com.example.fraudriskanalyzer.model.User;
 import com.example.fraudriskanalyzer.repository.UserRepository;
 import com.example.fraudriskanalyzer.security.JwtUtil;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -10,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 
@@ -31,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRequest request) {
         String email = normalizeEmail(request.email());
         String password = validatePassword(request.password());
 
@@ -50,7 +55,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody AuthRequest request) {
+    public AuthResponse login(@Valid @RequestBody AuthRequest request) {
         String email = normalizeEmail(request.email());
         String password = requirePassword(request.password());
 
@@ -86,7 +91,7 @@ public class AuthController {
 
     private String validatePassword(String password) {
         String value = requirePassword(password);
-        if (value.length() < 8 || value.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+        if (value.length() < 8 || value.getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Password must be at least 8 characters and no more than 72 UTF-8 bytes");
@@ -101,6 +106,9 @@ public class AuthController {
         return password;
     }
 
-    public record AuthRequest(String email, String password) {}
+    public record AuthRequest(
+            @NotBlank @Email String email,
+            @NotBlank @Size(min = 8, max = 72) String password) {}
+
     public record AuthResponse(String token, String email) {}
 }
