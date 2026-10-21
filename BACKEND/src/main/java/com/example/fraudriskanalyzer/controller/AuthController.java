@@ -103,6 +103,10 @@ public class AuthController {
         if (password == null || password.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
         }
+        if (password.getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Password must not exceed 72 UTF-8 bytes");
+        }
         return password;
     }
 
