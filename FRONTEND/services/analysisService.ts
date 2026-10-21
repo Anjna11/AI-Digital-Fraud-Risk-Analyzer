@@ -6,6 +6,35 @@ import {
   riskLevelFromScore,
 } from "@/types/analysis";
 import { mockHistory, mockResults } from "@/lib/mock-data/results";
+import { getToken } from "@/services/authService";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+
+async function postAnalysis(path: "url" | "message" | "qr", value: string): Promise<AnalysisResult> {
+  const token = getToken();
+  if (!token) {
+    throw new Error("Please log in before running an analysis.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/analyze/${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ value }),
+  });
+
+  if (response.status === 401) {
+    throw new Error("Your session is missing or expired. Please log in again.");
+  }
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(typeof body?.message === "string" ? body.message : "Analysis request failed.");
+  }
+
+  return response.json() as Promise<AnalysisResult>;
+}
 
 const delay = (ms = 900) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -117,30 +146,15 @@ function toResult(type: AnalysisType, input: string): AnalysisResult {
 }
 
 export async function analyzeUrl(url: string): Promise<AnalysisResult> {
-  const response = await fetch("http://localhost:8080/api/analyze/url", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: url }),
-  });
-  return await response.json();
+  return postAnalysis("url", url);
 }
 
 export async function analyzeMessage(message: string): Promise<AnalysisResult> {
-  const response = await fetch("http://localhost:8080/api/analyze/message", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: message }),
-  });
-  return await response.json();
+  return postAnalysis("message", message);
 }
 
 export async function analyzeQr(fileName: string): Promise<AnalysisResult> {
-  const response = await fetch("http://localhost:8080/api/analyze/qr", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value: fileName }),
-  });
-  return await response.json();
+  return postAnalysis("qr", fileName);
 }
 
 export async function getHistory(): Promise<HistoryItem[]> {
