@@ -3,20 +3,25 @@
 ## Requirements
 
 - Java 21
-- Maven 3.9+ (or the Maven wrapper, if present)
+- Maven 3.9+
 - A MongoDB database
 - Environment variables `MONGODB_URI` and `JWT_SECRET`
 
 ## Configure environment variables
 
-The application intentionally does not store database credentials or the JWT signing secret in `application.properties`.
-
-Set these variables in your shell or IDE run configuration before starting Spring Boot:
+The application intentionally does not store database credentials or the JWT signing secret in `application.properties`. Set these variables in your shell or IDE run configuration before starting Spring Boot:
 
 - `MONGODB_URI`: the complete MongoDB connection URI for your database.
 - `JWT_SECRET`: a cryptographically random secret with at least 32 UTF-8 bytes.
 
-Do not commit a real `.env` file, database URI, password, or JWT secret. The `.env.example` file contains placeholders only.
+For a local Linux/macOS shell, for example:
+
+```bash
+export MONGODB_URI='your-mongodb-connection-uri'
+export JWT_SECRET="$(openssl rand -base64 32)"
+```
+
+`.env.example` is a reference template only; Spring Boot does not automatically load a `.env` file. Never commit real credentials or a real `.env` file.
 
 ## Start the backend
 
@@ -58,7 +63,7 @@ Registration requires a valid email and a password of at least 8 characters. Pas
 
 `POST /api/auth/login`
 
-Uses the same request shape as registration. Success returns HTTP 200 with a JWT and the normalized email. Invalid credentials return HTTP 401; an already registered email returns HTTP 409.
+Uses the same request shape as registration. Success returns HTTP 200 with a JWT and normalized email. Invalid credentials return HTTP 401; an already registered email returns HTTP 409.
 
 ### Current user
 
