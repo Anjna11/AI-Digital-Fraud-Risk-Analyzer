@@ -34,3 +34,14 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## Backend API configuration
+
+Create a local `.env.local` file in the `FRONTEND` directory (do not commit it) and set:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
+The frontend uses this base URL for register, login, and analysis requests. Successful login/registration stores the returned JWT in browser local storage; analysis requests send it as `Authorization: Bearer <token>`. The backend must be running with `MONGODB_URI` and `JWT_SECRET` configured. Because browser local storage is accessible to JavaScript, production deployments should consider an HttpOnly, Secure cookie/session design and should configure backend CORS to allow only the deployed frontend origin.

@@ -8,24 +8,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
+import { registerUser } from "@/services/authService";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [touched, setTouched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const passwordValid = password.length >= 8;
   const matches = confirm.length > 0 && confirm === password;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setTouched(true);
+    setError(null);
     if (!passwordValid || !matches) return;
+
     setLoading(true);
-    // Mocked registration — real signup will call auth-service (Spring Boot) here.
-    setTimeout(() => router.push("/dashboard"), 600);
+    try {
+      await registerUser(email, password);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -40,16 +51,17 @@ export default function RegisterPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="name" className="mb-1.5 block text-sm text-ink-dim">
-                  Name
-                </label>
-                <Input id="name" placeholder="Your full name" required />
-              </div>
-              <div>
                 <label htmlFor="email" className="mb-1.5 block text-sm text-ink-dim">
                   Email
                 </label>
-                <Input id="email" type="email" placeholder="you@example.com" required />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
               <div>
                 <label htmlFor="password" className="mb-1.5 block text-sm text-ink-dim">
@@ -92,6 +104,7 @@ export default function RegisterPage() {
                   </p>
                 )}
               </div>
+              {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Creating account…" : "Create account"}
               </Button>
