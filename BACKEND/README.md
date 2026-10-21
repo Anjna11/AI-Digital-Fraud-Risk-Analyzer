@@ -13,12 +13,14 @@ The application intentionally does not store database credentials or the JWT sig
 
 - `MONGODB_URI`: the complete MongoDB connection URI for your database.
 - `JWT_SECRET`: a cryptographically random secret with at least 32 UTF-8 bytes.
+- `FRONTEND_ORIGIN`: allowed frontend origin(s), comma-separated. Defaults to `http://localhost:3000`. Set this to your deployed frontend origin in production.
 
 For a local Linux/macOS shell, for example:
 
 ```bash
 export MONGODB_URI='your-mongodb-connection-uri'
 export JWT_SECRET="$(openssl rand -base64 32)"
+export FRONTEND_ORIGIN="http://localhost:3000"
 ```
 
 `.env.example` is a reference template only; Spring Boot does not automatically load a `.env` file. Never commit real credentials or a real `.env` file.
@@ -108,4 +110,4 @@ Send the token in the `Authorization: Bearer <token>` header. Requests without a
 - Passwords are hashed with BCrypt.
 - Spring Security is stateless; it does not create a server-side login session.
 - The current JWT principal is the user's email. This protects endpoints, but scan records are not yet automatically linked to their owner.
-- Configure production CORS with an explicit allow-list of your deployed frontend origins before deployment.
+- CORS uses the configured `FRONTEND_ORIGIN` allow-list rather than allowing every origin. For multiple trusted origins, provide a comma-separated list.
