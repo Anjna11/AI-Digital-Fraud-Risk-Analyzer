@@ -56,10 +56,7 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
   }
 
   const data: AuthResponse = await response.json();
-  if (typeof window !== "undefined") {
-    localStorage.setItem(TOKEN_KEY, data.token);
-  }
-  return data;
+  return saveToken(data);
 }
 
 export function logout(): void {
